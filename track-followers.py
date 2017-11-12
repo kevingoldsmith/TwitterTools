@@ -145,9 +145,6 @@ if test_mode:
 now = datetime.datetime.now(dateutil.tz.tzutc())
 
 MY_TWITTER_CREDS = os.path.expanduser('~/.my_app_credentials')
-CONSUMER_KEY = "8tWGuEOJr7HEC9J6D8SqQ"
-CONSUMER_SECRET = "jsiPRnMsham9Ulc3Y95Ld9J0WySvtRy4rpEAqKkbw"
-TWITTER_APP_NAME = "dlizer"
 
 if not os.path.exists(MY_TWITTER_CREDS):
     twitter.oauth_dance(TWITTER_APP_NAME, CONSUMER_KEY, CONSUMER_SECRET, MY_TWITTER_CREDS)
