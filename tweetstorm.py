@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import os
 import argparse
 
 #when run as a script, do initialization
@@ -21,9 +20,8 @@ with open(file_name, 'r') as f:
 breakpoints = []
 possible_breakpoint = 0
 current_tweet_end = tweet_length
-done = False
-while not done:
-	#this will fail if the sentance and paragraph are both longer than tweet_length, future poblem to fix
+while not (current_tweet_end > len(text)):
+#this will fail if the sentance and paragraph are both longer than tweet_length, future poblem to fix
 	end_of_sentance = text.find('. ', possible_breakpoint+1, current_tweet_end)
 	end_of_paragraph = text.find('\n\n', possible_breakpoint+1, current_tweet_end)
 	if end_of_paragraph > -1:
@@ -36,8 +34,6 @@ while not done:
 		else:
 			breakpoints.append(possible_breakpoint+1)
 			current_tweet_end = possible_breakpoint+1 + tweet_length
-	if current_tweet_end > len(text):
-		done = True
 
 start = 0
 tweet = 1
