@@ -1,0 +1,5 @@
+test.txt
+data/
+ttvenv/
+*.log
+*.ini

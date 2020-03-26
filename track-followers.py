@@ -3,24 +3,37 @@ import twitter
 from prettytable import PrettyTable
 import dateutil.parser
 import datetime
-import pickle
 from collections import OrderedDict
 import textwrap
 import argparse
+import json
+import configparser
 
+CONFIG_FILE = 'config.ini'
+DATA_DIR = 'data'
+DATA_FILE = 'followers.json'
+LOG_FILE = 'followers.log'
 
 def output_line(line, write_to_stdout=True, file=None):
     if write_to_stdout:
-        print line
+        print(line)
     if not file is None:
         file.write(line.encode('utf8'))
-        file.write('\n')
+        file.write('\n'.encode('utf8'))
+
+
+def dict_to_ordereddict(unordered_dict):
+    sorted_keys = sorted(unordered_dict.keys())
+    ordered_dict = OrderedDict()
+    for key in sorted_keys:
+        ordered_dict[key] = unordered_dict[key]
+    return ordered_dict
 
 
 def get_people_string(people_list):
     def show_date(status):
-        if p.get('status'):
-            lastpostdate = dateutil.parser.parse(p['status']['created_at'])
+        if status:
+            lastpostdate = dateutil.parser.parse(status['created_at'])
             now = datetime.datetime.now(dateutil.tz.tzutc())
             datediff = datetime.datetime(now.year, now.month, now.day) - datetime.datetime(lastpostdate.year, lastpostdate.month, lastpostdate.day)
             return datediff.days
@@ -55,13 +68,14 @@ def get_lost_people_string(people_list, followers_over_time):
 
 def get_people_details(id_list):
     people = []
-    chunks = [id_list[x:x+100] for x in xrange(0, len(id_list), 100)]
+    chunks = [id_list[x:x+100] for x in range(0, len(id_list), 100)]
     for chunk in chunks:
         people.extend(t.users.lookup(user_id=','.join(str(x) for x in chunk)))
     return people
 
 
-def get_tweets_since_time(start_time):
+def get_tweets_since_time(start_time_str):
+    start_time = dateutil.parser.parse(start_time_str)
     tweets = t.statuses.user_timeline(count=25)
     return_tweets = [tw for tw in tweets if dateutil.parser.parse(tw['created_at']) > start_time]
     last_tweet = tweets[-1]
@@ -144,29 +158,42 @@ if test_mode:
 
 now = datetime.datetime.now(dateutil.tz.tzutc())
 
-MY_TWITTER_CREDS = os.path.expanduser('~/.my_app_credentials')
+config_parser = configparser.ConfigParser()
+config_parser.read(CONFIG_FILE)
+if len(config_parser) == 0:
+    print("ERROR: no config file loaded")
+    exit(1)
 
-if not os.path.exists(MY_TWITTER_CREDS):
-    twitter.oauth_dance(TWITTER_APP_NAME, CONSUMER_KEY, CONSUMER_SECRET, MY_TWITTER_CREDS)
+app_name = config_parser.get('Login Parameters', 'app_name')
+api_key = config_parser.get('Login Parameters', 'api_key')
+api_secret = config_parser.get('Login Parameters', 'api_secret')
+oauth_token = config_parser.get('Login Parameters', 'oauth_token', fallback='')
+oauth_secret = config_parser.get('Login Parameters', 'oauth_secret', fallback='')
 
-oauth_token, oauth_secret = twitter.read_token_file(MY_TWITTER_CREDS)
+if oauth_token == '' or oauth_secret == '':
+    oauth_token, oauth_secret = twitter.oauth_dance(app_name, api_key, api_secret)
+    config_parser['Login Parameters']['oauth_token'] = oauth_token
+    config_parser['Login Parameters']['oauth_secret'] = oauth_secret
+    with open(CONFIG_FILE, 'w') as configfile:
+        config_parser.write(configfile)
 
-t = twitter.Twitter(auth=twitter.OAuth(
-    oauth_token, oauth_secret, CONSUMER_KEY, CONSUMER_SECRET))
+t = twitter.Twitter(auth=twitter.OAuth(oauth_token, oauth_secret, api_key, api_secret))
 
 followers_ids = t.followers.ids()['ids']
 followers_over_time = OrderedDict()
 
+data_path = os.path.join(DATA_DIR, DATA_FILE)
 logfile = None
 if write_log:
-    logfile = open('followers.log', 'a')
+    logfile = open(LOG_FILE, 'ab')
 
 output_line('=======================================================', write_to_stdout, logfile)
 output_line('Followers: {0} at {1}'.format(len(followers_ids), now), write_to_stdout, logfile)
 
 try:
-    with open('followers.txt', 'r') as f:
-        followers_over_time = pickle.load(f)
+    with open(data_path, 'r') as f:
+        followers_dict = json.load(f)
+        followers_over_time = dict_to_ordereddict(followers_dict)
         followers_last_time = next(reversed(followers_over_time))
         follower_ids_last_time = followers_over_time[followers_last_time]
 
@@ -192,10 +219,11 @@ except IOError:
     pass
 
 followers_over_time[now] = followers_ids
+followers_dict[now.isoformat()] = followers_ids
 
 if not test_mode:
-    with open('followers.txt', 'w') as f:
-        pickle.dump(followers_over_time, f)
+    with open(data_path, 'w') as f:
+        json.dump(followers_dict, f)
 else:
     output_line('NOTE: output not written to followers.txt', write_to_stdout, logfile)
 
