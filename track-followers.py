@@ -50,8 +50,8 @@ def get_people_string(people_list):
 
 def get_lost_people_string(people_list, followers_over_time):
     def show_date(status):
-        if p.get('status'):
-            lastpostdate = dateutil.parser.parse(p['status']['created_at'])
+        if status:
+            lastpostdate = dateutil.parser.parse(status['created_at'])
             now = datetime.datetime.now(dateutil.tz.tzutc())
             datediff = datetime.datetime(now.year, now.month, now.day) - datetime.datetime(lastpostdate.year, lastpostdate.month, lastpostdate.day)
             return datediff.days
