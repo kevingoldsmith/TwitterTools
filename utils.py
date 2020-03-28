@@ -4,6 +4,8 @@ import twitter
 import os
 import json
 import time
+import datetime
+import dateutil.relativedelta
 
 CONFIG_FILE = 'config.ini'
 
@@ -31,9 +33,25 @@ def oauth_and_get_twitter():
     return t
 
 def dump_to_monthly_json_file(data_directory, year, month, data):
-    directory = "%s/%i" % (data_directory, year)
+    directory = os.path.join(data_directory, str(year))
     if not os.path.isdir(directory):
         os.makedirs(directory)
     with open("%s/%i-%i.json" % (directory, year, month), "w") as f:
         f.write(json.dumps(data, indent=2))
     time.sleep(1)
+
+def find_newest_saved_month(data_directory, end_year):
+    check_date = datetime.datetime.now()
+    done = False
+
+    if os.path.isdir(data_directory):
+        while not done:
+            if os.path.isdir(os.path.join(data_directory, str(check_date.year))):
+                if os.path.exists(os.path.join(data_directory, str(check_date.year), '%i-%i.json' % (check_date.year, check_date.month))):
+                    return check_date.year, check_date.month
+            check_date = check_date - dateutil.relativedelta.relativedelta(months=1)
+            if check_date.year <= end_year:
+                done = True
+    
+    return None, None
+
