@@ -3,3 +3,5 @@ data/
 ttvenv/
 *.log
 *.ini
+__pycache__/
+.vscode/
