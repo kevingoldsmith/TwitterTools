@@ -32,11 +32,13 @@ def oauth_and_get_twitter():
     t = twitter.Twitter(auth=twitter.OAuth(oauth_token, oauth_secret, api_key, api_secret))
     return t
 
-def dump_to_monthly_json_file(data_directory, year, month, data):
+def dump_to_monthly_json_file(data_directory, year, month, data, datatype=''):
     directory = os.path.join(data_directory, str(year))
     if not os.path.isdir(directory):
         os.makedirs(directory)
-    with open("%s/%i-%i.json" % (directory, year, month), "w") as f:
+    if len(datatype) > 0:
+        datatype = '{}_'.format(datatype)
+    with open('{}/{}{}-{:0>2d}.json'.format(directory, datatype, year, month), "w") as f:
         f.write(json.dumps(data, indent=2))
     time.sleep(1)
 
