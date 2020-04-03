@@ -6,6 +6,7 @@ import json
 import time
 import datetime
 import dateutil.relativedelta
+from collections import OrderedDict
 
 CONFIG_FILE = 'config.ini'
 
@@ -32,6 +33,7 @@ def oauth_and_get_twitter():
     t = twitter.Twitter(auth=twitter.OAuth(oauth_token, oauth_secret, api_key, api_secret))
     return t
 
+
 def dump_to_monthly_json_file(data_directory, year, month, data, datatype=''):
     directory = os.path.join(data_directory, str(year))
     if not os.path.isdir(directory):
@@ -41,6 +43,7 @@ def dump_to_monthly_json_file(data_directory, year, month, data, datatype=''):
     with open('{}/{}{}-{:0>2d}.json'.format(directory, datatype, year, month), "w") as f:
         f.write(json.dumps(data, indent=2))
     time.sleep(1)
+
 
 def find_newest_saved_month(data_directory, end_year):
     check_date = datetime.datetime.now()
@@ -56,4 +59,22 @@ def find_newest_saved_month(data_directory, end_year):
                 done = True
     
     return None, None
+
+
+def dict_to_ordereddict(unordered_dict):
+    sorted_keys = sorted(unordered_dict.keys())
+    ordered_dict = OrderedDict()
+    for key in sorted_keys:
+        ordered_dict[key] = unordered_dict[key]
+    return ordered_dict
+
+
+def diff_two_id_sets(followers1, followers2):
+    s = set(followers1)
+    new_follower_ids = [x for x in followers2 if x not in s]
+
+    s = set(followers2)
+    lost_follower_ids = [x for x in followers1 if x not in s]
+
+    return new_follower_ids, lost_follower_ids
 

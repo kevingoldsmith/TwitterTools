@@ -8,6 +8,7 @@ import textwrap
 import argparse
 import json
 import configparser
+from utils import diff_two_id_sets, dict_to_ordereddict
 
 CONFIG_FILE = 'config.ini'
 DATA_DIR = 'data'
@@ -20,14 +21,6 @@ def output_line(line, write_to_stdout=True, file=None):
     if not file is None:
         file.write(line.encode('utf8'))
         file.write('\n'.encode('utf8'))
-
-
-def dict_to_ordereddict(unordered_dict):
-    sorted_keys = sorted(unordered_dict.keys())
-    ordered_dict = OrderedDict()
-    for key in sorted_keys:
-        ordered_dict[key] = unordered_dict[key]
-    return ordered_dict
 
 
 def get_people_string(people_list):
@@ -94,16 +87,6 @@ def print_tweet(tweet, write_to_stdout=True, file=None):
     output_line(u'= {:<66} ='.format(tweet['created_at']), write_to_stdout, file)
     output_line(u'{:=<70}'.format(u''), write_to_stdout, file)
     output_line(u'\n', write_to_stdout, file)
-
-
-def diff_two_id_sets(followers1, followers2):
-    s = set(followers1)
-    new_follower_ids = [x for x in followers2 if x not in s]
-
-    s = set(followers2)
-    lost_follower_ids = [x for x in followers1 if x not in s]
-
-    return new_follower_ids, lost_follower_ids
 
 
 def find_when_friend_started_following_me(friend_id, followers_over_time):
