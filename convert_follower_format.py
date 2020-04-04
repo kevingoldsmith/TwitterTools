@@ -62,9 +62,10 @@ try:
             new_follower_list.append(follower_item)
             follower_count_list.append(follower_count_item)
             last_item = item
+        new_follower_list[-1]['follower_id_list'] = last_item[1]
         
         with open(os.path.join(DATA_DIR, 'new_followers.json'), 'w') as f:
-            json.dump(new_follower_list, f, indent=2)
+            json.dump(new_follower_list, f)
         
         with open(os.path.join(DATA_DIR, 'new_follower_count.csv'), 'w', newline='') as f:
             fieldnames = ['iso_time', 'followers', 'added', 'lost']
