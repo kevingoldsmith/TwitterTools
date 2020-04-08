@@ -5,3 +5,4 @@ ttvenv/
 *.ini
 __pycache__/
 .vscode/
+twitter-venv/
