@@ -9,6 +9,7 @@ import argparse
 import json
 import configparser
 from utils import diff_two_id_sets, dict_to_ordereddict
+import sys
 
 CONFIG_FILE = 'config.ini'
 DATA_DIR = 'data'
@@ -91,7 +92,7 @@ def print_tweet(tweet, write_to_stdout=True, file=None):
 
 def find_when_friend_started_following_me(friend_id, followers_over_time):
     #check the first item, easy out
-    keys = followers_over_time.keys()
+    keys = list(followers_over_time.keys())
     s = set(followers_over_time[keys[0]])
     if friend_id in s:
         return None
@@ -109,7 +110,7 @@ def find_when_friend_started_following_me(friend_id, followers_over_time):
                 return keys[found]
             return None
         hi = hi if hi is not None else len(followers_over_time)
-        mid = lo+(hi-lo)/2
+        mid = int(lo+(hi-lo)/2)
         s = set(followers_over_time[keys[mid]])
         if friend_id in s:
             return binary_search(lo, mid, mid)
@@ -183,17 +184,18 @@ try:
         s = set(follower_ids_last_time)
         new_follower_ids = [x for x in followers_ids if x not in s]
         if (len(new_follower_ids) > 0):
-            output_line('New Followers', write_to_stdout, logfile)
+            output_line('New Followers: {}'.format(len(new_follower_ids)), write_to_stdout, logfile)
             output_line(get_people_string(get_people_details(new_follower_ids)), write_to_stdout, logfile)
 
         s = set(followers_ids)
         lost_follower_ids = [x for x in follower_ids_last_time if x not in s]
         if (len(lost_follower_ids) > 0):
-            output_line('Lost Followers', write_to_stdout, logfile)
+            output_line('Lost Followers: {}'.format(len(lost_follower_ids)), write_to_stdout, logfile)
             try:
                 output_line(get_lost_people_string(get_people_details(lost_follower_ids), followers_over_time), write_to_stdout, logfile)
             except:
                 output_line('error printing lost followers: probably a spammer', write_to_stdout, logfile)
+                output_line("Unexpected error: {}".format(sys.exc_info()[0]), write_to_stdout, logfile)
         tweets = get_tweets_since_time(followers_last_time)
         for tw in reversed(tweets):
             print_tweet(tw, write_to_stdout, logfile)
