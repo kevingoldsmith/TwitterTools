@@ -13,7 +13,7 @@ DATA_DIR = 'data'
 if __name__ == "__main__":
     pass
 
-end_year, end_month = utils.find_newest_saved_month(DATA_DIR, 2007)
+end_year, end_month = utils.find_newest_saved_month(DATA_DIR, 2007, 'tweets')
 end_date = None
 if (not end_year is None) and (not end_month is None):
     end_date = datetime.datetime(year=end_year, month=end_month, day=1, tzinfo=dateutil.tz.tzutc())
@@ -49,5 +49,5 @@ for tweet in tweets:
 for year in tweets_by_year_and_month:
     for month in tweets_by_year_and_month[year]:
         sorted_tweets = sorted(tweets_by_year_and_month[year][month], key=lambda i: i['created_at'])
-        print("saving tweets for {0}-{1}".format(year, month))
-        utils.dump_to_monthly_json_file(DATA_DIR, year, month, sorted_tweets)
+        print(f"saving tweets for {year}-{month:02}")
+        utils.dump_to_monthly_json_file(DATA_DIR, year, month, sorted_tweets, datatype='tweets')
