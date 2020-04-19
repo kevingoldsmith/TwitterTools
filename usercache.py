@@ -40,7 +40,7 @@ class TwitterUserCache:
     
     def add_to_cache(self, twitter_user_data):
         new_user_info = { 'cached_at': datetime.datetime.utcnow().isoformat() }
-        copy_dict_items(['id', 'name', 'screen_name', 'description', 'url', 'followers_count', 'created_at', 'statuses_count'], twitter_user_data, new_user_info)
+        copy_dict_items(['id', 'name', 'screen_name', 'description', 'url', 'followers_count', 'created_at', 'statuses_count', 'profile_image_url_https'], twitter_user_data, new_user_info)
         self.cache[str(twitter_user_data['id'])] = new_user_info
         return new_user_info
 
