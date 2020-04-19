@@ -25,12 +25,24 @@ class TwitterUserCache:
         atexit.register(_savecache, self.cache, self._data_path)
     
 
+    def is_cached(self, twitter_id):
+        key = str(twitter_id)
+        if not key in self.cache:
+            return False
+
+        dt = datetime.datetime.fromisoformat(self.cache[key]['cached_at'])
+        cached_time = datetime.datetime.utcnow() - dt
+        if cached_time.days > 30:
+            return False
+
+        return True
+
+
     def get_user_data(self, twitter_id):
         key = str(twitter_id)
         
         # have cached id
-        if key in self.cache:
-            print('found in cache')
+        if self.is_cached(twitter_id):
             return self.cache[key]
 
         user_info = self._twobj.users.show(user_id=twitter_id)
@@ -47,7 +59,7 @@ class TwitterUserCache:
         lookup_ids = []
 
         for id in twitter_id_list:
-            if str(id) in self.cache:
+            if self.is_cached(id):
                 cache_people.append(self.cache[str(id)])
             else:
                 lookup_ids.append(id)
