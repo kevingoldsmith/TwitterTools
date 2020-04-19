@@ -37,21 +37,22 @@ class TwitterUserCache:
 
         return True
 
+    
+    def add_to_cache(self, twitter_user_data):
+        new_user_info = { 'cached_at': datetime.datetime.utcnow().isoformat() }
+        copy_dict_items(['id', 'name', 'screen_name', 'description', 'url', 'followers_count', 'created_at', 'statuses_count'], twitter_user_data, new_user_info)
+        self.cache[str(twitter_user_data['id'])] = new_user_info
+        return new_user_info
+
 
     def get_user_data(self, twitter_id):
         key = str(twitter_id)
         
-        # have cached id
         if self.is_cached(twitter_id):
             return self.cache[key]
 
         user_info = self._twobj.users.show(user_id=twitter_id)
-        new_user_info = { 'cached_at': datetime.datetime.utcnow().isoformat() }
-        copy_dict_items(['id', 'name', 'screen_name', 'description', 'url', 'followers_count', 'created_at', 'statuses_count'], user_info, new_user_info)
-        self.cache[key] = new_user_info
-        
-        # need to cache ID
-        return self.cache[key]
+        return self.add_to_cache(user_info)
 
 
     def get_users_data(self, twitter_id_list):
@@ -70,9 +71,6 @@ class TwitterUserCache:
             people.extend(self._twobj.users.lookup(user_id=','.join(str(x) for x in chunk)))
         
         for person in people:
-            new_user_info = { 'cached_at': datetime.datetime.utcnow().isoformat() }
-            copy_dict_items(['id', 'name', 'screen_name', 'description', 'url', 'followers_count', 'created_at', 'statuses_count'], person, new_user_info)
-            self.cache[person['id']]=new_user_info
-            cache_people.append(new_user_info)
+            cache_people.append(self.add_to_cache(person))
 
         return cache_people
