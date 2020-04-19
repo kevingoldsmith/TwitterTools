@@ -7,6 +7,8 @@ import time
 import datetime
 import dateutil.relativedelta
 from collections import OrderedDict
+import urllib.request
+import re
 
 CONFIG_FILE = 'config.ini'
 
@@ -84,3 +86,17 @@ def diff_two_id_sets(followers1, followers2):
 
     return new_follower_ids, lost_follower_ids
 
+
+def get_user_ids_of_post_likes(post_id):
+    try:
+        json_data = urllib.request.urlopen('https://twitter.com/i/activity/favorited_popup?id=' + str(post_id)).read()
+        found_ids = re.findall(r'data-user-id=\\"+\d+', json_data.decode("utf-8"))
+        unique_ids = list(set([re.findall(r'\d+', match)[0] for match in found_ids]))
+        return unique_ids
+    except urllib.request.HTTPError:
+        return False
+
+
+def copy_dict_items(item_list, dict_from, dict_to):
+    for item in item_list:
+        dict_to[item] = dict_from[item]
