@@ -100,3 +100,8 @@ def get_user_ids_of_post_likes(post_id):
 def copy_dict_items(item_list, dict_from, dict_to):
     for item in item_list:
         dict_to[item] = dict_from[item]
+
+
+def logmsg(msg):
+    time = datetime.datetime.now()
+    print("[%04i/%02i/%02i %02i:%02i:%02i]: %s" % (time.year, time.month, time.day, time.hour, time.minute, time.second, msg))

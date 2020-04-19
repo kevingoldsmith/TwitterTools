@@ -3,13 +3,15 @@ import json
 import atexit
 import twitter
 import datetime
-from utils import copy_dict_items
+from utils import copy_dict_items, logmsg
 
 def _savecache(cache, path):
     with open(path, 'w') as f:
         f.write(json.dumps(cache))
 
 class TwitterUserCache:
+
+    _UPDATE_DAYS = 30
 
     cache = {} # class variable is the right choice here
 
@@ -22,8 +24,24 @@ class TwitterUserCache:
         if os.path.exists(self._data_path):
             with open(self._data_path, 'r') as f:
                 self.cache = json.load(f)
+        logmsg(f'loaded twitter user cache: {len(self.cache)} items')
+        self._clean_cache()
         atexit.register(_savecache, self.cache, self._data_path)
     
+
+    def _clean_cache(self):
+        items_to_remove = []
+        now = datetime.datetime.utcnow()
+        for key in self.cache.keys():
+            dt = datetime.datetime.fromisoformat(self.cache[key]['cached_at'])
+            cached_time = datetime.datetime.utcnow() - dt
+            # why keep cache items 2*longer than when we replace them? maybe useful for deleted accounts?
+            if cached_time.days > 2*self._UPDATE_DAYS:
+                items_to_remove.append(key)
+        logmsg(f'cleaning twitter user cache: {len(items_to_remove)} to remove')
+        for item in items_to_remove:
+            del self.cache[item]
+
 
     def is_cached(self, twitter_id):
         key = str(twitter_id)
@@ -32,7 +50,7 @@ class TwitterUserCache:
 
         dt = datetime.datetime.fromisoformat(self.cache[key]['cached_at'])
         cached_time = datetime.datetime.utcnow() - dt
-        if cached_time.days > 30:
+        if cached_time.days > self._UPDATE_DAYS:
             return False
 
         return True
