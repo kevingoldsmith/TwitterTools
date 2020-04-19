@@ -7,11 +7,9 @@ from collections import OrderedDict
 import textwrap
 import argparse
 import json
-import configparser
-from utils import diff_two_id_sets, dict_to_ordereddict
+from utils import diff_two_id_sets, dict_to_ordereddict, oauth_and_get_twitter
 import sys
 
-CONFIG_FILE = 'config.ini'
 DATA_DIR = 'data'
 DATA_FILE = 'followers.json'
 LOG_FILE = 'followers.log'
@@ -142,26 +140,7 @@ if test_mode:
 
 now = datetime.datetime.now(dateutil.tz.tzutc())
 
-config_parser = configparser.ConfigParser()
-config_parser.read(CONFIG_FILE)
-if len(config_parser) == 0:
-    print("ERROR: no config file loaded")
-    exit(1)
-
-app_name = config_parser.get('Login Parameters', 'app_name')
-api_key = config_parser.get('Login Parameters', 'api_key')
-api_secret = config_parser.get('Login Parameters', 'api_secret')
-oauth_token = config_parser.get('Login Parameters', 'oauth_token', fallback='')
-oauth_secret = config_parser.get('Login Parameters', 'oauth_secret', fallback='')
-
-if oauth_token == '' or oauth_secret == '':
-    oauth_token, oauth_secret = twitter.oauth_dance(app_name, api_key, api_secret)
-    config_parser['Login Parameters']['oauth_token'] = oauth_token
-    config_parser['Login Parameters']['oauth_secret'] = oauth_secret
-    with open(CONFIG_FILE, 'w') as configfile:
-        config_parser.write(configfile)
-
-t = twitter.Twitter(auth=twitter.OAuth(oauth_token, oauth_secret, api_key, api_secret))
+t = oauth_and_get_twitter()
 
 followers_ids = t.followers.ids()['ids']
 followers_over_time = OrderedDict()
