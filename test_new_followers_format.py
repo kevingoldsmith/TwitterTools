@@ -219,3 +219,12 @@ for date_key in reconstructed_by_followers_dict.keys():
                 logger.critical('missing from new: %s', str(missing_from_new))
         else:
             logger.debug('follower lists are identical')
+
+# check the count csv file values against the original and all the reconstructions
+for item in follower_count:
+    if len(old_followers_dict[item['iso_time']]) != item['followers']:
+        logger.critical('count is incorrect compared to %s for %s', OLD_FOLLOWERS_FILE, item['iso_time'])
+    if len(reconstructed_follower_dict[item['iso_time']]) != item['followers']:
+        logger.critical('count is incorrect compared to reconstruction from %s for %s', NEW_FOLLOWERS_FILE, item['iso_time'])
+    if item['iso_time'] in reconstructed_by_followers_dict and len(reconstructed_by_followers_dict[item['iso_time']]) != item['followers']:
+        logger.critical('count is incorrect compared to reconstruction from %s for %s', NEW_BY_FOLLOWERS_FILE, item['iso_time'])
