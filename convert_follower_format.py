@@ -77,7 +77,7 @@ try:
                     follower_item['new_followers'] = new_ids
                     update_follow_dict(follow_dict, item[0], new_ids)
                 if len(lost_ids) > 0:
-                    follower_item['lost_follers'] = lost_ids
+                    follower_item['lost_followers'] = lost_ids
                     update_follow_dict(follow_dict, item[0], lost_ids, False)
             else:
                 follower_item['follower_id_list'] = item[1]
@@ -91,7 +91,7 @@ try:
             last_item = item
         new_follower_list[-1]['follower_id_list'] = last_item[1]
         
-        print("writing: {}".format('new_Foolowers.json'))
+        print("writing: {}".format('new_followers.json'))
         with open(os.path.join(DATA_DIR, 'new_followers.json'), 'w') as f:
             json.dump(new_follower_list, f)
         
