@@ -10,7 +10,7 @@ import logging
 import sys
 import errno
 import csv
-from utils import diff_two_id_sets
+from utils import diff_two_id_sets, test_valid_loading
 import datetime
 
 DATA_DIR = 'data'
@@ -19,17 +19,6 @@ NEW_FOLLOWERS_FILE = 'new_followers.json'
 NEW_BY_FOLLOWERS_FILE = 'by_followers.json'
 FOLLOWER_COUNT_FILE = 'new_follower_count.csv'
 LOG_FILE = 'test-new-followers.log'
-
-def test_valid_loading(to_test):
-    """
-    test_valid_loading:
-        Assuming a list of tuples of (filename, object), checks if object valid, if not logs and exits
-    """
-    for item in to_test:
-        if not item[1]:
-            logger = logging.getLogger('test-new-followers-format.test_valid_loading')
-            logger.critical('%s file not loaded', item[0])
-            sys.exit(errno.ENOENT)
 
 
 # Set up logging

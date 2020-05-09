@@ -9,6 +9,9 @@ import dateutil.relativedelta
 from collections import OrderedDict
 import urllib.request
 import re
+import logging
+import sys
+import errno
 
 CONFIG_FILE = 'config.ini'
 
@@ -77,14 +80,14 @@ def dict_to_ordereddict(unordered_dict):
     return ordered_dict
 
 
-def diff_two_id_sets(followers1, followers2):
-    s = set(followers1)
-    new_follower_ids = [x for x in followers2 if x not in s]
+def diff_two_id_sets(old_ids_input, new_ids_input):
+    s = set(old_ids_input)
+    new_ids = [x for x in new_ids_input if x not in s]
 
-    s = set(followers2)
-    lost_follower_ids = [x for x in followers1 if x not in s]
+    s = set(new_ids_input)
+    lost_ids = [x for x in old_ids_input if x not in s]
 
-    return new_follower_ids, lost_follower_ids
+    return new_ids, lost_ids
 
 
 def get_user_ids_of_post_likes(post_id):
@@ -105,3 +108,15 @@ def copy_dict_items(item_list, dict_from, dict_to):
 def logmsg(msg):
     time = datetime.datetime.now()
     print("[%04i/%02i/%02i %02i:%02i:%02i]: %s" % (time.year, time.month, time.day, time.hour, time.minute, time.second, msg))
+
+
+def test_valid_loading(to_test):
+    """
+    test_valid_loading:
+        Assuming a list of tuples of (filename, object), checks if object valid, if not logs and exits
+    """
+    for item in to_test:
+        if not item[1]:
+            logger = logging.getLogger('utils.test_valid_loading')
+            logger.critical('%s file not loaded', item[0])
+            sys.exit(errno.ENOENT)
