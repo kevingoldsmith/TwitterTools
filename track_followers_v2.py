@@ -5,8 +5,9 @@ TODO:
 2a. DONE: new_followers.json just need the most recent checkpoint (for comparison)
 2b. DONE: by_followers.json to track when people joined and left
 3. decide if it is better to switch
-3a. time each (can use the checkpoints in followers.json to test different scenarios, potentially)
-3b. write a script to run both and store the timings in a separate file (use logger?)
+3a. DONE: time each (can use the checkpoints in followers.json to test different scenarios, potentially)
+3b. DONE: write a script to run both and store the timings in a separate file (use logger?)
+4. make new_followers smaller? the checkpoints don't seem necessary. Can I increase the space between them or just drop them all together?
 """
 
 import os
