@@ -145,9 +145,8 @@ with open(os.path.join(DATA_DIR, FOLLOWER_COUNT_FILE), 'w', newline='') as f:
     writer.writeheader()
     writer.writerows(follower_count)
 
-
 #output to the user
-user_cache = TwitterUserCache(t)
+user_cache = TwitterUserCache(t, root_logger_name=logger.name)
 # print out new followers
 if new_followers:
     users_data = user_cache.get_users_data(new_followers)

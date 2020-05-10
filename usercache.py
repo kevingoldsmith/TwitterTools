@@ -3,7 +3,8 @@ import json
 import atexit
 import twitter
 import datetime
-from utils import copy_dict_items, logmsg
+import logging
+from utils import copy_dict_items
 
 def _savecache(cache, path):
     with open(path, 'w') as f:
@@ -15,16 +16,20 @@ class TwitterUserCache:
 
     cache = {} # class variable is the right choice here
 
-    def __init__(self, twobj, data_directory='data'):
+    def __init__(self, twobj, data_directory='data', root_logger_name=''):
         super().__init__()
         self._twobj = twobj
+        logger_name = 'TwitterUserCache'
+        if root_logger_name:
+            logger_name = root_logger_name + '.' + logger_name
+        self._logger = logging.getLogger(logger_name)
         self._data_directory = data_directory
         self._data_path = os.path.join(self._data_directory, 'user_cache.json')
         # load cache from file
         if os.path.exists(self._data_path):
             with open(self._data_path, 'r') as f:
                 self.cache = json.load(f)
-        logmsg(f'loaded twitter user cache: {len(self.cache)} items')
+        self._logger.info('loaded twitter user cache: %d items', len(self.cache))
         self._clean_cache()
         atexit.register(_savecache, self.cache, self._data_path)
     
@@ -38,7 +43,7 @@ class TwitterUserCache:
             # why keep cache items 2*longer than when we replace them? maybe useful for deleted accounts?
             if cached_time.days > 2*self._UPDATE_DAYS:
                 items_to_remove.append(key)
-        logmsg(f'cleaning twitter user cache: {len(items_to_remove)} to remove')
+        self._logger.info('cleaning twitter user cache: %d to remove', len(items_to_remove))
         for item in items_to_remove:
             del self.cache[item]
 
