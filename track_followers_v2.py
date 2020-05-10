@@ -31,6 +31,8 @@ LOG_FILE = 'followers-v2.log'
 console_log_level = logging.INFO
 logfile_log_level = logging.INFO
 
+now = datetime.datetime.now(dateutil.tz.tzutc())
+
 #when run as a script, do initialization
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Track twitter follower changes since last run.')
@@ -56,7 +58,6 @@ fh.setLevel(logfile_log_level)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
 
-now = datetime.datetime.now(dateutil.tz.tzutc())
 t = oauth_and_get_twitter()
 
 followers_checkpoints = []
@@ -165,3 +166,7 @@ if lost_followers:
     pt.align['screen_name'], pt.align['name'], pt.align['last_post'], pt.align['following'], pt.align['since'] = 'l', 'l', 'l', 'l', 'l'
     [pt.add_row(p) for p in pl]
     logger.info('\nLost Followers:\n'+pt.get_string())
+
+finish_time = datetime.datetime.now(dateutil.tz.tzutc())
+execution_time = finish_time - now
+logger.info('execution in %d micro-seconds.', execution_time.microseconds)
