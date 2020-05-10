@@ -102,7 +102,7 @@ def get_user_ids_of_post_likes(post_id):
 
 def copy_dict_items(item_list, dict_from, dict_to):
     for item in item_list:
-        dict_to[item] = dict_from[item]
+        dict_to[item] = dict_from.get(item, None)
 
 
 def logmsg(msg):
@@ -120,3 +120,12 @@ def test_valid_loading(to_test):
             logger = logging.getLogger('utils.test_valid_loading')
             logger.critical('%s file not loaded', item[0])
             sys.exit(errno.ENOENT)
+
+def status_date(user):
+    if user and ('status' in user) and user['status'] and ('created_at' in user['status']):
+        lastpostdate = dateutil.parser.parse(user['status']['created_at'])
+        now = datetime.datetime.now(dateutil.tz.tzutc())
+        datediff = datetime.datetime(now.year, now.month, now.day) - datetime.datetime(lastpostdate.year, lastpostdate.month, lastpostdate.day)
+        return datediff.days
+    else:
+        return 'none'

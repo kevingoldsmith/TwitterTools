@@ -1,9 +1,9 @@
 """
 TODO:
 1. DONE: verify that you can re-create followers.json from by_followers.json OR new_followers.json
-2. switch this to load those two files
-2a. new_followers.json just need the most recent checkpoint (for comparison)
-2b. by_followers.json to track when people joined and left
+2. DONE: switch this to load those two files
+2a. DONE: new_followers.json just need the most recent checkpoint (for comparison)
+2b. DONE: by_followers.json to track when people joined and left
 3. decide if it is better to switch
 3a. time each (can use the checkpoints in followers.json to test different scenarios, potentially)
 3b. write a script to run both and store the timings in a separate file (use logger?)
@@ -17,9 +17,10 @@ import csv
 import logging
 import datetime
 import dateutil.parser
-from utils import diff_two_id_sets, oauth_and_get_twitter, test_valid_loading
+from utils import diff_two_id_sets, oauth_and_get_twitter, test_valid_loading, status_date
 import sys
-import errno
+from usercache import TwitterUserCache
+from prettytable import PrettyTable
 
 DATA_DIR = 'data'
 FOLLOWERS_DATA_FILE = 'new_followers.json'
@@ -124,6 +125,44 @@ for id in new_followers:
 
 # update counts
 logger.info('updating_counts')
-new_count = { 'iso_tine': now_iso, 'followers': len(followers_ids), 'added': len(new_followers), 'lost': len(lost_followers) }
+new_count = { 'iso_time': now_iso, 'followers': len(followers_ids), 'added': len(new_followers), 'lost': len(lost_followers) }
 follower_count.append(new_count)
 
+#write out files
+
+logger.debug('saving %s', FOLLOWERS_DATA_FILE)
+with open(os.path.join(DATA_DIR, FOLLOWERS_DATA_FILE), 'w') as f:
+    json.dump(followers_checkpoints, f)
+
+logger.debug('saving: %s', BY_FOLLOWERS_DATA_FILE)
+with open(os.path.join(DATA_DIR, BY_FOLLOWERS_DATA_FILE), 'w') as f:
+    json.dump(by_followers, f)
+
+logger.debug('saving: %s', FOLLOWER_COUNT_FILE)
+with open(os.path.join(DATA_DIR, FOLLOWER_COUNT_FILE), 'w', newline='') as f:
+    fieldnames = ['iso_time', 'followers', 'added', 'lost']
+    writer = csv.DictWriter(f, fieldnames=fieldnames, quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+    writer.writeheader()
+    writer.writerows(follower_count)
+
+
+#output to the user
+user_cache = TwitterUserCache(t)
+# print out new followers
+if new_followers:
+    users_data = user_cache.get_users_data(new_followers)
+    pl = [[p['screen_name'], p['name'], status_date(p), p['following']] for p in users_data]
+    pt = PrettyTable(field_names=['screen_name', 'name', 'last_post', 'following'])
+    pt.align['screen_name'], pt.align['name'], pt.align['last_post'], pt.align['following'] = 'l', 'l', 'l', 'l'
+    [pt.add_row(p) for p in pl]
+    logger.info('\nNew Followers:\n' + pt.get_string())
+
+if lost_followers:
+    def get_when_last_started_follow(id, by_followers):
+        return datetime.date.fromisoformat(by_followers[id]['follow'][-1]).strftime('%Y-%m-%d')
+    users_data = user_cache.get_users_data(lost_followers)
+    pl = [[p['screen_name'], p['name'], status_date(p), p['following'], get_when_last_started_follow(p['id'], by_followers)] for p in users_data]
+    pt = PrettyTable(field_names=['screen_name', 'name', 'last_post', 'following', 'since'])
+    pt.align['screen_name'], pt.align['name'], pt.align['last_post'], pt.align['following'], pt.align['since'] = 'l', 'l', 'l', 'l', 'l'
+    [pt.add_row(p) for p in pl]
+    logger.info('\nLost Followers:\n'+pt.get_string())
