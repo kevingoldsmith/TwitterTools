@@ -160,7 +160,7 @@ if new_followers:
 
 if lost_followers:
     def get_when_last_started_follow(id, by_followers):
-        return datetime.date.fromisoformat(by_followers[str(id)]['follow'][-1]).strftime('%Y-%m-%d')
+        return dateutil.parser.parse(by_followers[str(id)]['follow'][-1]).strftime('%Y-%m-%d')
     users_data = user_cache.get_users_data(lost_followers)
     pl = [[p['screen_name'], p['name'], status_date(p), p['following'], get_when_last_started_follow(p['id'], by_followers)] for p in users_data]
     pt = PrettyTable(field_names=['screen_name', 'name', 'last_post', 'following', 'since'])
