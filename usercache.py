@@ -91,7 +91,10 @@ class TwitterUserCache:
         people = []
         chunks = [lookup_ids[x:x+100] for x in range(0, len(lookup_ids), 100)]
         for chunk in chunks:
-            people.extend(self._twobj.users.lookup(user_id=','.join(str(x) for x in chunk)))
+            try:
+                people.extend(self._twobj.users.lookup(user_id=','.join(str(x) for x in chunk)))
+            except twitter.TwitterHTTPError as e:
+                self._logger.info("TwitterHttpError exception caught", exc_info=e)
         
         for person in people:
             cache_people.append(self.add_to_cache(person))
