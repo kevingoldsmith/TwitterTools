@@ -59,18 +59,12 @@ try:
         follower_count_list = []
         follow_dict = {}
         last_item = None
-        count = 0
 
         for item in followers_over_time.items():
             follower_item = {'iso_time': item[0]}
             follower_count_item = {'iso_time': item[0], 'followers': len(item[1])}
             if not last_item is None:
                 new_ids, lost_ids = diff_two_id_sets(last_item[1], item[1])
-                if count > 24:
-                    follower_item['follower_id_list'] = item[1]
-                    count = 0
-                else:
-                    count += 1
                 follower_count_item['added'] = len(new_ids)
                 follower_count_item['lost'] = len(lost_ids)
                 if len(new_ids) > 0:
