@@ -7,7 +7,7 @@ TODO:
 3. decide if it is better to switch
 3a. DONE: time each (can use the checkpoints in followers.json to test different scenarios, potentially)
 3b. DONE: write a script to run both and store the timings in a separate file (use logger?)
-4. make new_followers smaller? the checkpoints don't seem necessary. Can I increase the space between them or just drop them all together?
+4. DONE: make new_followers smaller? the checkpoints don't seem necessary. Can I increase the space between them or just drop them all together?
 """
 
 import os
@@ -30,7 +30,7 @@ FOLLOWER_COUNT_FILE = 'new_follower_count.csv'
 LOG_FILE = 'followers-v2.log'
 
 console_log_level = logging.INFO
-logfile_log_level = logging.INFO
+logfile_log_level = logging.DEBUG
 
 now = datetime.datetime.now(dateutil.tz.tzutc())
 
@@ -69,12 +69,12 @@ try:
     logger.debug('loading: %s', FOLLOWERS_DATA_FILE)
     with open(os.path.join(DATA_DIR, FOLLOWERS_DATA_FILE), 'r') as f:
         followers_checkpoints = json.load(f)
-    logger.info('%s: %d entries', FOLLOWERS_DATA_FILE, len(followers_checkpoints))
+    logger.debug('%s: %d entries', FOLLOWERS_DATA_FILE, len(followers_checkpoints))
     
     logger.debug('loading: %s', BY_FOLLOWERS_DATA_FILE)
     with open(os.path.join(DATA_DIR, BY_FOLLOWERS_DATA_FILE), 'r') as f:
         by_followers = json.load(f)
-    logger.info('%s: %d entries', BY_FOLLOWERS_DATA_FILE, len(by_followers.items()))
+    logger.debug('%s: %d entries', BY_FOLLOWERS_DATA_FILE, len(by_followers.items()))
     
     logger.debug('loading follower count file')
     with open(os.path.join(DATA_DIR, FOLLOWER_COUNT_FILE), 'r') as f:
@@ -84,7 +84,7 @@ try:
                 if isinstance(value, float):
                     row[key] = int(value)
             follower_count.append(row)
-    logger.info('%s: %d entries', FOLLOWER_COUNT_FILE, len(follower_count))
+    logger.debug('%s: %d entries', FOLLOWER_COUNT_FILE, len(follower_count))
 except Exception as e:
     logger.exception(e)
 
@@ -102,7 +102,7 @@ new_followers, lost_followers = diff_two_id_sets(last_follower_checkpoint['follo
 now_iso = now.isoformat()
 
 # update checkpoints
-logger.info('updating checkpoints')
+logger.debug('updating checkpoints')
 new_checkppoint = { 'iso_time': now_iso, 'follower_id_list': followers_ids }
 if new_followers:
     new_checkppoint['new_followers'] = new_followers
@@ -112,7 +112,7 @@ del last_follower_checkpoint['follower_id_list']
 followers_checkpoints.append(new_checkppoint)
 
 # update by_followers
-logger.info('updating by_followers')
+logger.debug('updating by_followers')
 for id in lost_followers:
     entry = by_followers[str(id)]
     if not 'unfollow' in entry:
@@ -126,7 +126,7 @@ for id in new_followers:
         by_followers[str(id)] = { 'follow': [now_iso] }
 
 # update counts
-logger.info('updating_counts')
+logger.debug('updating_counts')
 new_count = { 'iso_time': now_iso, 'followers': len(followers_ids), 'added': len(new_followers), 'lost': len(lost_followers) }
 follower_count.append(new_count)
 

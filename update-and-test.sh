@@ -1,3 +1,7 @@
+cp data/followers.json data/followers-backup.json
+cp data/new_followers.json data/new_followers-backup.json
+cp data/new_follower_count.csv data/new_follower_count-backup.json
+cp data/by_followers.json data/by_followers-backup.json
 echo "track-followers.py" >> testout.log
 (time python track-followers.py) >> testout.log 2>&1
 echo "track-followers_v2.py" >> testout.log
